@@ -1,0 +1,4 @@
+interface:
+  display_name: "Building Mental Maps"
+  short_description: "Build and sync native Obsidian codebase atlases"
+  default_prompt: "Use $building-mental-maps to build or synchronize a native Obsidian codebase atlas."

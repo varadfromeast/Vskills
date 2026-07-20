@@ -1,234 +1,143 @@
 ---
 name: building-mental-maps
-description: Maintain an Obsidian mental map for a long-running project.
-disable-model-invocation: true
+description: Build and maintain a living Obsidian codebase atlas. Use for whole-system orientation, planned mapping from issues, PRDs, or ADRs, or synchronization from PRs, commits, diffs, or working-tree changes.
 ---
 
 # Building Mental Maps
 
-Maintain a senior-engineer mental map in Obsidian after completed issue, PR, or
-commit work. The map preserves the project's current logical shape using
-layered Mermaid diagrams and tiny wikilinked block notes.
+Maintain a **living atlas**: a present-tense codebase model carried across
+bounded runs. End every run with a coherent, validated map; end every
+implementation run with a resumable checkpoint. Preserve stable identities and
+make only justified model or projection changes. Never write a one-off report
+or implementation chronology.
 
-Write only to the Obsidian vault. Read repo docs and diffs as evidence, but do
-not maintain a parallel repo atlas.
+**Map all code; do not draw all code.** Account for every maintained first-party
+file, but visualize only the responsibilities and journeys a maintainer needs to
+remember.
 
-## Required Inputs
+## Core contract
 
-Require these before editing:
+- Apply the shared [operational definitions](references/MAP-MODEL.md#operational-definitions)
+  whenever deciding map trust, migration, coverage, relationship significance,
+  or semantic no-op status.
+- Classify repository test code, fixtures, snapshots, and test-only
+  configuration as reasoned coverage exclusions. Read representative tests as
+  evidence, but keep them out of block footprints, concrete anchors, and views.
+- Require an explicit vault root containing `.obsidian/`. Never guess or search
+  for one. If the user explicitly requests a new vault, use the approved
+  [new-vault bootstrap](references/CODEBASE-ATLAS.md#choose-or-create-the-vault)
+  only after its absolute path is explicit.
+- Operate on the active checkout only and never switch it. For a historical
+  revision or PR head, require the user to provide an explicit isolated
+  worktree at that state and treat that worktree as the repository.
+- Write project-map artifacts only inside the vault and outside the repository;
+  read the repository as evidence. Refuse a repo/map overlap that would make
+  the map change its own target fingerprint.
+- Preflight the map version before mutation. Treat a coherent legacy map as
+  read-only until the user explicitly approves a version 2 migration.
+- Make the atlas sufficient for architecture orientation without source. Keep
+  code as linked evidence or on-demand detail.
+- Inventory every public or runnable entry-point family. Give each family its
+  own focused journey/contract view, or a specific reason no focused view is
+  useful; never merge distinct families merely to minimize view count.
 
-- Obsidian vault path.
-- Project atlas note name, or permission to create `<Project Name> Atlas.md`.
-- Issue numbers, PR URL, commit range, or explicit diff range to map.
+## Route the run
 
-If the vault path is missing, ask. Do not guess it from the repo.
+Identify the repository, vault, and project-map directory. The current
+repository is sufficient when unambiguous.
 
-## Workflow
+Choose one mode:
 
-1. Identify the target issue, PR, commit range, or diff range.
-   Done when the requested change set is unambiguous.
+- **`codebase-atlas`** — no trusted map/checkpoint exists, the user requests a
+  whole-codebase map, or incremental safety requires full reconciliation.
+- **`change-map`** — synchronize an existing trusted map. Compare the last
+  validated state to active `HEAD` plus staged, unstaged, deleted, and
+  non-ignored untracked changes.
 
-2. Read the atlas note, index note, and touched block notes.
-   Done when current layers, block names, and `Connects` claims are known.
+An issue, PRD, or ADR supports planned claims but never advances the
+implementation checkpoint. A commit, PR, or range is evidence and focus; do
+not let it silently skip changes since the checkpoint. If the user asks only
+for an explanation, read the map and repository without editing either.
 
-3. Read relevant project context docs when present: `CONTEXT.md`,
-   `docs/architecture.md`, `docs/architecture-diagrams.md`,
-   `docs/ubiquitous-language.md`, ADRs, PRDs, or issue notes. Do not copy them
-   into Obsidian. Done when vocabulary and decisions are grounded.
+## Load only the branch you need
 
-4. Read the PR or commit diff once. Start with stats and changed-file list, then
-   inspect relevant hunks. Open full files only when the diff is ambiguous.
-   Done when you have a temporary 3-6 bullet delta in plain English.
+Before editing, read [MAP-MODEL.md](references/MAP-MODEL.md).
 
-5. Decide the mental-map change:
-   - create a block,
-   - update a block,
-   - link blocks,
-   - rename a block,
-   - deprecate a block,
-   - delete a block,
-   - or make no atlas change.
-   Done when every supplied change is accounted for by current project shape,
-   not by a changelog.
+- For `codebase-atlas`, also read
+  [CODEBASE-ATLAS.md](references/CODEBASE-ATLAS.md) and
+  [VIEWS.md](references/VIEWS.md).
+- For `change-map`, also read [CHANGE-MAP.md](references/CHANGE-MAP.md). Read
+  [VIEWS.md](references/VIEWS.md) only when blocks, relationships, hierarchy,
+  journeys, or native projections may change.
 
-6. Reconcile relationships before editing:
-   - For every touched block-note `Connects` item, choose `atlas edge`,
-     `planned atlas edge`, or `note-only`.
-   - Do not silently omit a claimed relationship.
-   - If a diagram edge is not represented in either source or target notes,
-     add the note relationship or remove the edge.
-   Done when notes and diagrams have an intentional relationship set.
+## Steps
 
-7. Edit only the atlas note, index note, and touched block notes.
-   Done when verification passes or skipped checks are named.
+1. **Resolve the boundary.** Fix the mode, active checkout, vault, map directory,
+   baseline, target, and supplied evidence before writing. Confirm the map is
+   version 2, outside the repository, and has a complete Include/Exclude
+   classification; otherwise stop for migration or boundary correction.
+   Continue only when every boundary value is explicit and passes preflight.
+2. **Inspect current truth.** Read the existing model, entry-point inventory,
+   relevant project language, effective diff, current affected files, tests,
+   and anchors. Keep scratch inventories and deltas out of Obsidian. Continue
+   only when every repository-inventory path in a bootstrap, or every
+   effective-delta path and material consumer in a sync, has evidence and a
+   coverage, ownership, impact, or explicit-uncertainty disposition.
+3. **Reconcile the model.** Make the smallest justified responsibility,
+   interface, state, behavior, deployment, policy, risk, relationship, footprint,
+   anchor, status, or lifecycle changes. A semantic no-op is valid. Continue
+   only when every inspected path, family, and claim has one present-tense model
+   outcome and no known stale claim remains.
+4. **Refresh affected projections.** Reconcile each changed entry-point family,
+   then refresh the required all-relationships Canvas and affected compact,
+   scoped, or Mermaid views from canonical notes under the
+   [native-view contract](references/VIEWS.md). Continue only when every affected
+   active block, significant relationship, and entry-point row is
+   projected or validly waived; the main Canvas independently contains every
+   orientation block in exactly one declared semantic group and forms one
+   canonical backbone with no unexplained implemented-card isolates; stable
+   presentation is preserved; and artifacts that need no change remain
+   byte-stable where the contract requires it. Mermaid and scoped views may
+   deepen the map but never pay for a missing front-door card, group, or
+   backbone connection.
+5. **Validate the whole contract.** Run the
+   [bundled validator](references/MAP-MODEL.md#validate-version-2) with its
+   required arguments. Check exhaustive ownership on every run. Fix all errors,
+   write its exact validation receipt, and apply the
+   [visual-verification states](references/VIEWS.md#visual-verification) to every
+   changed view. Continue only when validation has zero errors, the receipt binds
+   the exact target and map, and each changed view has an explicit verification
+   state; otherwise report the blocked or skipped check.
+6. **Checkpoint last.** Confirm the repository target did not change during the
+   run, then checkpoint using that receipt. Finish only when the target
+   fingerprint is unchanged and the checkpoint accepts the exact receipt.
+   Advance after an inspected implementation no-op; leave the checkpoint
+   unchanged for planning-only work, stale maps, or failed validation.
 
-## Obsidian Shape
+## Completion
 
-Use ordinary Markdown files in the vault. Obsidian does not need to be running.
-Do not require Canvas, Bases, URI automation, REST plugins, or paid services.
+For `codebase-atlas`, apply every item in the
+[bootstrap completion gate](references/CODEBASE-ATLAS.md#bootstrap-completion-gate).
+For `change-map`, complete every
+[procedure](references/CHANGE-MAP.md#procedure) step against the entire
+baseline-to-target delta. Validator success never substitutes for either
+semantic bound.
 
-Use:
+Across both modes, finish only when every inventory path is classified, every
+included file has exactly one owner, every active block and significant
+relationship is projected, the separate all-relationships Canvas contains every
+implemented relationship, preserves the declared semantic groups, and has no
+overlapping cards or groups; every entry-point family has its own focused view or
+specific waiver; the Canvas semantic-group declaration and rendered topology
+agree; every native link resolves exactly; and every changed view has an explicit
+verification state. The all-relationships Canvas is mandatory even when focused
+Mermaid flows are more readable, but it may omit unambiguous edge labels to
+reduce visual noise. A new codebase atlas must reach CLI screenshot verification
+when the CLI probe succeeds; unavailable rendering is reported as a blocked
+visual check. A sync also requires an exact validated-target checkpoint.
 
-- One atlas note: `<Project Name> Atlas.md`.
-- One index note: `<Project Name> Blocks Index.md`.
-- One Markdown note per block.
-- Normal `[[wikilinks]]` in block notes and the index. Mermaid links alone do
-  not create a useful Obsidian graph/backlink structure.
-- Plain note-title labels plus Obsidian's Mermaid `internal-link` class in
-  atlas diagrams. Do not put `[[wikilinks]]` inside Mermaid node labels.
-
-## Atlas Note
-
-The atlas note is visual and terse. Each layer must answer one question in its
-heading, not merely name an area.
-
-````md
-# Project Name Atlas
-
-## Overview: How Do The Major Blocks Fit?
-
-```mermaid
-flowchart LR
-  A["Block A"] --> B["Block B"]
-  class A,B internal-link
-```
-
-## Layer: How Does Context Reach Generation?
-
-```mermaid
-flowchart LR
-  ChapterMap["Chapter Map"] --> Grounding["Grounding Context"]
-  class ChapterMap,Grounding internal-link
-```
-
-## Open Questions
-
-- Only questions that affect the mental map.
-````
-
-Rules:
-
-- Use Mermaid `flowchart LR` only.
-- Use plain note titles as Mermaid node labels and apply `class <node>
-  internal-link` so nodes open matching Obsidian notes.
-- Keep each diagram to about 12 blocks. Split larger diagrams into another
-  layer.
-- Use directed arrows. Label non-obvious implemented edges.
-- Use dashed arrows for planned relationships:
-
-```mermaid
-flowchart LR
-  Source["Source Block"] -. "planned relationship" .-> Target["Target Block"]
-  class Source,Target internal-link
-```
-
-- Use dashed styling for planned blocks:
-
-```mermaid
-flowchart LR
-  Implemented["Implemented Block"] --> Planned["Planned Block"]
-
-  classDef planned stroke-dasharray: 4 4
-  class Planned planned
-  class Implemented,Planned internal-link
-```
-
-## Block Notes
-
-A block is a remembered implementation responsibility, not a file, class, or
-feature label. Name blocks with senior-engineer-friendly responsibility names
-that stay true to the underlying codebase.
-
-Every block note uses this shape:
-
-```md
----
-type: mental-map-block
-project: Project Name
-status: implemented
----
-
-# Block Name
-
-Purpose: One sentence.
-
-Concrete anchors:
-- `module.or.interface`
-- `ImportantModel`
-- `important_route_or_function`
-
-Connects:
-- [[Other Block]] -> relationship label
-
-Evidence: [#123](https://github.com/org/repo/issues/123)
-```
-
-Rules:
-
-- `status` is only `implemented` or `planned`.
-- Implemented blocks must have concrete anchors verified in the current
-  codebase by search or direct file reads.
-- Planned blocks may omit concrete anchors, but must have issue, PRD, ADR, or
-  architecture evidence.
-- Keep `Purpose`, `Hides`, and `Open question` to one sentence each.
-- Prefer updating an existing block when an issue changes an existing
-  responsibility.
-- Create a new block only when the change introduces a stable responsibility a
-  senior engineer will need to remember later.
-- Deprecate instead of deleting when unsure.
-- Rename when the old name no longer matches the responsibility; update atlas
-  links, index links, and touched block-note links.
-
-## Index Note
-
-The index note is only navigation:
-
-```md
-# Project Name Blocks Index
-
-- [[Block A]]
-- [[Block B]]
-- [[Block C]]
-```
-
-Do not duplicate block summaries in the index.
-
-## Batch Mode
-
-When invoked after multiple issues or PRs:
-
-1. Produce one temporary delta per issue/PR/commit.
-2. Merge those deltas into one coherent atlas update.
-3. Update the map to show what the project looks like now, not the order of
-   implementation.
-
-Do not commit temporary deltas into Obsidian.
-
-## Optional GitNexus Branch
-
-If GitNexus is available and the diff is hard to explain, use it only to
-understand the temporary delta. Do not copy GitNexus flow output into the atlas.
-Convert findings into logical blocks and concrete anchors.
-
-## Verification
-
-Before finishing, check:
-
-- The atlas note exists.
-- The index note exists.
-- Every atlas diagram uses `flowchart LR`.
-- Every atlas layer heading states the question the layer answers.
-- Every diagram has about 12 blocks or fewer.
-- Every Mermaid node label names a corresponding block note or one intentionally
-  created in this pass.
-- Every Mermaid node is assigned the `internal-link` class.
-- Every implemented block has verified `Concrete anchors`.
-- Every planned block has evidence.
-- Every touched block-note `Connects` item is intentionally represented as an
-  atlas edge, planned atlas edge, or note-only relationship.
-- Every atlas edge is backed by source/target block-note `Connects` text.
-- The index includes every created or touched block note.
-- No temporary issue-delta bullets were written into Obsidian.
-
-In the final response, report changed notes, created blocks, renamed blocks,
-deprecated blocks, and verification status.
+Report the mode, revision and mapped-target presentation, map directory, changed
+blocks and views, contract/state/behavior/relationship changes, entry-point
+coverage and waivers, mapped/excluded/unresolved counts, all-relationships Canvas
+path and verification state, validation receipt, checkpoint, and performed or
+skipped checks.

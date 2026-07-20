@@ -5,7 +5,8 @@ Reusable Agent Skills for Pi and the open Agent Skills ecosystem.
 ## Skills
 
 ### building-mental-maps
-Maintains an Obsidian mental map for a long-running project.
+Maintains a living mental map of a codebase in Obsidian and continuously updates
+it as the code changes.
 
 Install with:
 
@@ -14,7 +15,8 @@ npx skills add varadfromeast/Vskills --skill building-mental-maps --agent pi
 ```
 
 ### find-pi-capabilities
-Discovers and prescribes the smallest verified set of Pi capabilities for a later executing turn. It is discovery-only: it does not answer or implement the underlying request.
+For the Pi harness, searches for the skills and packages needed for a given
+prompt and explains which capabilities should handle it.
 
 Install with:
 
