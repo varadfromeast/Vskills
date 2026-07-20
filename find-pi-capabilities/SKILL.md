@@ -1,85 +1,130 @@
 ---
 name: find-pi-capabilities
-description: Find the smallest verified set of Pi capabilities needed to execute a prompt well.
-disable-model-invocation: true
+description: Scout the smallest verified Pi capability set before execution. Use when the user asks what Agent Skill, Pi package, MCP/tool integration, or subagent can handle a task.
 ---
 
 # Find Pi Capabilities
 
-## Scope boundary
+Operate as a **scout**: inspect enough to prescribe the route, then stop. Treat
+the prompt as evidence for a later executing turn; do not answer or implement
+it. Return install commands as inert user-run options, never actions.
 
-This Skill performs **capability discovery only**. Treat the user's prompt solely as evidence for prescribing the Skills, Pi packages, core tools, and subagent workflows that a later executing turn should use.
+## 1. Diagnose the gap
 
-Do not answer the underlying prompt, perform its implementation, make its final technical or product decisions, modify project files, install or activate capabilities, or run its requested experiment. Inspection and external lookup are permitted only far enough to identify requirements and compare capabilities. Findings about the underlying task are evidence for the prescription, never the user-facing answer.
+Inspect the named artifacts and the narrow project context needed to understand
+the intended outcome, constraints, inputs, and evidence standard. Record
+inaccessible evidence instead of filling it with assumptions.
 
-The only deliverable is a **capability prescription** for a subsequent executing turn.
+Derive a private list of requirements and classify each by capability kind:
 
-## 1. Diagnose the work
+- a **core tool** supplies an action already built into the session;
+- an **Agent Skill** supplies a reusable method;
+- a **Pi package** supplies missing runtime behaviour through an extension or
+  integration;
+- an **MCP server or external integration** supplies runtime behaviour through a
+  local or remote tool/API surface;
+- a **subagent** supplies a separate context, specialist, or worker.
 
-First inspect every artifact the prompt explicitly relies on. Read named text files in full, inspect binary or media inputs with the appropriate viewer, follow enough surrounding code to understand each artifact's role, and fetch referenced URLs far enough to identify the work they introduce. When an artifact is inaccessible, record it as uncertainty, derive only the requirements supported by available evidence, and mark requirements that depend on it as provisional.
+Classify what each artifact itself supplies. When a Skill depends on a CLI,
+service, or MCP server, record that runtime separately; do not attribute the
+runtime's features to the Skill instructions.
 
-Derive a private task graph from the intended outcome, evidence standard, constraints, inputs, dependencies, and handoffs. Use the graph only to expose capability requirements: information access, runtime actions, specialist methods, separate contexts, and orchestration.
+Compare each requirement with the capabilities exposed in the current session.
+Read the full `SKILL.md` of plausible active Skills. List available subagents
+when separate contexts could materially help. Mark each requirement **covered**,
+**partial**, **missing**, or **provisional**; treat partial coverage as a gap.
 
-**Complete when:** every task-graph node has either a known capability requirement or an explicitly provisional requirement tied to inaccessible evidence.
+**Complete when:** every requirement has one classification and one status, and
+every provisional status names the inaccessible evidence behind it.
 
-## 2. Fit the active capabilities
+## 2. Search the relevant branch
 
-Map each requirement to the capabilities already exposed in the session. Consider only what the task graph demands: core tools, external providers, Agent Skills, installed Pi packages, and available subagents. Read the full `SKILL.md` for plausible Skills, use `subagent({ action: "list" })` when separate contexts may help, and inspect exposed package metadata when ownership of a runtime feature is unclear.
+Choose discovery from the remaining gaps:
 
-Use the right capability kind:
+- **method gap** → follow [`AGENT-SKILLS.md`](AGENT-SKILLS.md);
+- **runtime gap** → follow [`PI-PACKAGES.md`](PI-PACKAGES.md);
+- **broad Skill-or-package request** → follow both references and compare
+  their method/runtime roles;
+- **MCP or external-integration gap** → follow
+  [`MCP-SERVERS.md`](MCP-SERVERS.md);
+- **separate-context gap** → compare available subagents;
+- **no gap** → keep the active capability and skip online discovery.
 
-- a **Skill** supplies a method;
-- a **tool or extension** supplies runtime behaviour;
-- a **package** installs Skills or runtime behaviour;
-- a **subagent** supplies a separate context or worker.
+Do not search MCP or subagent surfaces merely because the user names them as
+alternatives; require a matching diagnosed gap.
 
-Prefer the main agent for narrow serial work. Use subagents when independent evidence streams, large artifact sets, specialist perspectives, or staged handoffs materially improve execution. Parallelize independent analysis; keep dependent work sequential and normal writes under one writer.
+Use the strongest gap as the first query and the best active or partial
+capability as its comparator. For each searched surface, record the exact query
+and mechanism, whether it was semantic or lexical, active comparator, finalist,
+and keep/reject reason.
 
-**Complete when:** every requirement is marked covered, partial, or missing, and every retained capability supports at least one requirement.
+For each surface, inspect the top finalist first and inspect a second only after
+rejecting it. Stop as soon as one verified candidate closes the gap. After two
+failed queries or two rejected finalists, record no fit instead of broadening.
 
-## 3. Run a two-surface comparison
+Across the whole task, make at most eight external evidence retrievals, counting
+search commands, page opens, repository fetches, and inventory commands. Reuse
+search metadata and fetch each finalist's repository at most once; inspect its
+files and history locally. Do not make separate requests for popularity or
+activity when the search result or repository already supplies those signals.
 
-Follow [`SEARCH.md`](SEARCH.md) and run a live comparison on **both** discovery surfaces for every prescription:
+**Complete when:** every selected online surface has a recorded live query and
+every gap has a kept candidate or recorded no-fit decision.
 
-1. issue at least one network-backed Agent Skills query;
-2. issue at least one Pi package query.
+## 3. Verify and minimize
 
-Aim each baseline query at the highest-leverage requirement. For each surface, name the best active or installed capability serving that requirement and test whether any result improves on it; when no active capability serves it, use the closest active approach as the comparator. Use the documented online fallback when a native search tool is unavailable; an unavailable tool changes the mechanism, not the requirement to search.
+Keep a candidate only when its actual instructions or source directly cover the
+gap and materially improve on the active comparator. Prefer an active capability
+when the difference is negligible. Default to one recommendation; retain
+multiple capabilities only when they cover distinct requirements that one
+candidate cannot satisfy.
 
-Compare plausible finalists by direct coverage, result quality, overlap, provenance, maintenance, adoption, security, and execution cost. Prefer an active candidate when it is equivalent. Keep a compact search ledger containing each surface, exact query, mechanism, active or installed comparator, finalists, and decision.
+Do not retain optional accelerators, extra workers, or convenient integrations
+that are unnecessary for the user's stated outcome. Record them as rejected
+finalists in discovery evidence when relevant.
 
-**Complete when:** both surfaces have a recorded live query and decision, each requirement is covered by the smallest verified non-overlapping set, and every addition beats the active alternatives for its assigned role.
+For each retained addition, verify provenance, maintenance, adoption, overlap,
+installation command, and the security implications relevant to its capability
+kind. Treat popularity as supporting evidence rather than proof of fit or safety.
 
-## 4. Return the prescription
+**Complete when:** every known requirement is covered or explicitly unresolved,
+every retained capability has a distinct role, and every addition beats the
+active alternative for that role. Label the result **Qualified** when an
+unresolved gap or inaccessible evidence could change the set.
+
+## 4. Return the recommendation
+
+Use `# Recommended capability` for one item and `# Recommended capability set`
+for multiple items. When no candidate closes any gap, use
+`# No additional capability found`, name the best active fallback, and include
+the search evidence instead of padding the set. When some gaps close and others
+remain unresolved, return the retained recommendation and name the unresolved
+gaps under **Uncertainty**.
 
 ```markdown
-# Recommended capability set
+# Recommended capability
 
-## Context to load
-- Artifacts or project areas the executing turn must understand first.
-
-## Capabilities
-### Name — Core tool | Agent Skill | Pi package | Subagent workflow
-- **Role:** the requirement it covers
-- **Why this fit:** the decision-relevant advantage
-- **Status:** Already available | Installed; reload required | User-run option: `<exact install command>`
-- **Source:** verified URL or local source path for an external Skill or package; omit for active core tools and subagents
+## Name — Core tool | Agent Skill | Pi package | MCP server | External integration | Subagent
+- **What it adds:** the requirement it covers
+- **Why needed:** why active capabilities are insufficient, or why this active capability is sufficient
+- **Verification:** direct-fit and trust signals actually checked
+- **Status:** Already available | User-run option | Installation unresolved
+- **Install:** `<exact command>`
+- **Source:** verified URL or local source path
 
 ## Discovery evidence
-- **Agent Skills:** `<exact query>` via `<mechanism>`; compared with `<active or installed capability>` → finalist(s) and keep/reject decision.
-- **Pi packages:** `<exact query>` via `<mechanism>`; compared with `<active or installed capability>` → finalist(s) and keep/reject decision.
-
-## Discovery support
-- Missing search infrastructure worth installing for later triage; keep it separate from the execution set.
+- **Surface:** `<exact query>` via `<mechanism>` → `<finalist>` kept/rejected because `<decision>`.
 
 ## Execution shape
-A compact statement of how the capabilities combine, such as
-`scout + researcher in parallel → parent synthesis`.
+`capability + capability → parent execution`
 
 ## Uncertainty
-- Missing context or unavailable discovery that could change the set. Label the prescription **Qualified** and name every provisional requirement when critical evidence was inaccessible.
+- Evidence that could change the recommendation.
 ```
 
-Include only selected capabilities under **Capabilities**. Keep rejected finalists in **Discovery evidence**, then omit alternatives elsewhere. Omit empty optional sections and the execution shape for a single-agent task.
-
-The prescription is complete when the set is sufficient for every known requirement, every item has a distinct role, every new item has verified provenance and installation guidance, and the two mandatory searches and their active comparators are auditable from **Discovery evidence**. When critical evidence is inaccessible, return a **Qualified** prescription whose provisional requirements and possible effect on the set are explicit.
+Omit **Install** for active capabilities, **Source** for core tools and
+subagents, and every empty optional section. Include discovery evidence only for
+surfaces actually searched. Keep rejected finalists there and nowhere else.
+Include an execution shape only when multiple capabilities or handoffs need
+coordination. Keep it to a single routing line; do not add configuration or
+implementation examples.
